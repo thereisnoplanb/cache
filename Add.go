@@ -31,13 +31,7 @@ func (cache *Cache[TKey, TValue]) Add(key TKey, value TValue, expiresAfter ...ti
 		return ErrInvalidExpireAfter
 	}
 	cache.mutex.Lock()
-	defer func() {
-		cache.mutex.Unlock()
-		cache.ItemAdded.Invoke(cache, AddedEventArgs[TKey, TValue]{
-			Key:   key,
-			Value: value,
-		})
-	}()
+	defer cache.mutex.Unlock()
 	if _, found := cache.items[key]; found {
 		return ErrKeyAlreadyExists
 	}
@@ -53,13 +47,7 @@ func (cache *Cache[TKey, TValue]) add(key TKey, value TValue, expiresAfter ...ti
 	if expiration != NeverExpire {
 		timer = time.AfterFunc(expiration, func() {
 			cache.mutex.Lock()
-			defer func() {
-				cache.mutex.Unlock()
-				cache.ItemExpired.Invoke(cache, ExpiredEventArgs[TKey, TValue]{
-					Key:   key,
-					Value: value,
-				})
-			}()
+			defer cache.mutex.Unlock()
 			delete(cache.items, key)
 		})
 	}

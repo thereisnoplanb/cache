@@ -31,16 +31,8 @@ func (cache *Cache[TKey, TValue]) Replace(key TKey, value TValue, expiresAfter .
 		return ErrInvalidExpireAfter
 	}
 	cache.mutex.Lock()
-	item, found := cache.items[key]
-	defer func() {
-		cache.mutex.Unlock()
-		cache.ItemReplaced.Invoke(cache, ReplacedEventArgs[TKey, TValue]{
-			Key:      key,
-			NewValue: value,
-			OldValue: item.Value,
-		})
-	}()
-	if !found {
+	defer cache.mutex.Unlock()
+	if _, found := cache.items[key]; !found {
 		return ErrKeyNotFound
 	}
 	return cache.replace(key, value, expiresAfter...)
@@ -60,13 +52,7 @@ func (cache *Cache[TKey, TValue]) replace(key TKey, value TValue, expiresAfter .
 	if expiration != NeverExpire {
 		timer = time.AfterFunc(expiration, func() {
 			cache.mutex.Lock()
-			defer func() {
-				cache.mutex.Unlock()
-				cache.ItemExpired.Invoke(cache, ExpiredEventArgs[TKey, TValue]{
-					Key:   key,
-					Value: value,
-				})
-			}()
+			defer cache.mutex.Unlock()
 			delete(cache.items, key)
 		})
 	}

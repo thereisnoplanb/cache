@@ -4,8 +4,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	"github.com/thereisnoplanb/event"
 )
 
 // Creates a new cache with the specified key type and value type.
@@ -34,10 +32,6 @@ func New[TKey comparable, TValue any](defaultExpieresAfter time.Duration) (cache
 		items:                make(map[TKey]item[TValue]),
 		mutex:                &sync.Mutex{},
 		defaultExpieresAfter: defaultExpieresAfter,
-		ItemAdded:            event.New[Cache[TKey, TValue], AddedEventArgs[TKey, TValue]](),
-		ItemReplaced:         event.New[Cache[TKey, TValue], ReplacedEventArgs[TKey, TValue]](),
-		ItemExpired:          event.New[Cache[TKey, TValue], ExpiredEventArgs[TKey, TValue]](),
-		ItemRemoved:          event.New[Cache[TKey, TValue], RemovedEventArgs[TKey, TValue]](),
 	}
 	runtime.SetFinalizer(cache, finalize[TKey, TValue])
 	return cache, nil
