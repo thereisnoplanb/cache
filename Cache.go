@@ -10,9 +10,9 @@ const NeverExpire time.Duration = -1
 
 // Cache.
 type Cache[TKey comparable, TValue any] struct {
-	items                map[TKey]item[TValue]
-	mutex                *sync.Mutex
-	defaultExpieresAfter time.Duration
+	items              map[TKey]item[TValue]
+	mutex              *sync.Mutex
+	defaultExpireAfter time.Duration
 }
 
 type item[TValue any] struct {

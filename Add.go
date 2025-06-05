@@ -17,7 +17,7 @@ import "time"
 //	expiresAfter time.Duration [OPTIONAL]
 //
 // Time after the value is removed from the cache.
-// If the parameter is ommited the defaultExpieresAfter value is used. See cache.New method.
+// If the parameter is ommited the default expireAfter value is used. See cache.New, cache.Must methods.
 // The special value NeverExpire can be used to indicate that the value is cached until manually removed.
 //
 // # Returns
@@ -39,7 +39,7 @@ func (cache *Cache[TKey, TValue]) Add(key TKey, value TValue, expiresAfter ...ti
 }
 
 func (cache *Cache[TKey, TValue]) add(key TKey, value TValue, expiresAfter ...time.Duration) (err error) {
-	expiration := cache.defaultExpieresAfter
+	expiration := cache.defaultExpireAfter
 	if len(expiresAfter) > 0 {
 		expiration = expiresAfter[0]
 	}

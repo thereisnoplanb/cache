@@ -2,7 +2,7 @@ package cache
 
 import "time"
 
-// Adds a value to the cache or replaces the existing value in the cache under the specified key.
+// Adds a value to the cache or replaces the value in the cache under the specified key.
 //
 // # Parameters
 //
@@ -12,12 +12,12 @@ import "time"
 //
 //	value TValue
 //
-// The value added to the cache or to be replaced in the cache under the specified key.
+// The value added to the cache or replaced in the cache under the specified key.
 //
 //	expiresAfter time.Duration [OPTIONAL]
 //
 // Time after the value is removed from the cache.
-// If the parameter is ommited the defaultExpieresAfter value is used. See cache.New method.
+// If the parameter is ommited the default expireAfter value is used. See cache.New, cache.Must methods.
 // The special value NeverExpire can be used to indicate that the value is cached until manually removed.
 //
 // # Returns

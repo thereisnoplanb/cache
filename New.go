@@ -10,7 +10,7 @@ import (
 //
 // # Parameters
 //
-//	defaultExpieresAfter time.Duration
+//	expireAfter time.Duration
 //
 // The default value of time after the expired value is removed from the cache.
 // The special value NeverExpire can be used to indicate that the values are stored in the cache until manually removed.
@@ -23,15 +23,15 @@ import (
 //
 //	err error
 //
-// ErrInvalidExpireAfter - when defaultExpieresAfter parameter is not grater than zero or not equal to the special value NeverExpire.
-func New[TKey comparable, TValue any](defaultExpieresAfter time.Duration) (cache *Cache[TKey, TValue], err error) {
-	if !isExpirationValid(defaultExpieresAfter) {
+// ErrInvalidExpireAfter - when expireAfter parameter is not grater than zero or not equal to the special value - NeverExpire.
+func New[TKey comparable, TValue any](expireAfter time.Duration) (cache *Cache[TKey, TValue], err error) {
+	if !isExpirationValid(expireAfter) {
 		return nil, ErrInvalidExpireAfter
 	}
 	cache = &Cache[TKey, TValue]{
-		items:                make(map[TKey]item[TValue]),
-		mutex:                &sync.Mutex{},
-		defaultExpieresAfter: defaultExpieresAfter,
+		items:              make(map[TKey]item[TValue]),
+		mutex:              &sync.Mutex{},
+		defaultExpireAfter: expireAfter,
 	}
 	runtime.SetFinalizer(cache, finalize[TKey, TValue])
 	return cache, nil

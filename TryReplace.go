@@ -17,7 +17,7 @@ import "time"
 //	expiresAfter time.Duration [OPTIONAL]
 //
 // The time after the value is removed from the cache.
-// If the parameter is ommited, the defaultExpieresAfter value is used. See cache.New method.
+// If the parameter is ommited, the default expireAfter value is used. See cache.New, cache.Must methods.
 // The special value NeverExpire can be used to indicate that the value is cached until manually removed.
 //
 // # Returns
