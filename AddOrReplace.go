@@ -16,23 +16,52 @@ import "time"
 //
 //	expiresAfter time.Duration [OPTIONAL]
 //
-// Time after the value is removed from the cache.
-// If the parameter is ommited the default expireAfter value is used. See cache.New, cache.Must methods.
+// The duration after which the value is removed from the cache.
+// If omitted, the default expiration specified in New or Must is used.
 // The special value NeverExpire can be used to indicate that the value is cached until manually removed.
 //
 // # Returns
 //
 //	err error
 //
-// ErrInvalidExpireAfter - when passed expiresAter is not greater than zero or is not equal to the special value - NeverExpire.
+// Errors:
+//   - ErrInvalidExpireAfter - when the specified expiration is neither greater than zero nor equal to NeverExpire.
+//
+// # Remarks
+//
+// On success, AddOrReplace raises ItemAdded if the key was absent, or ItemReplaced if it was present.
 func (cache *Cache[TKey, TValue]) AddOrReplace(key TKey, value TValue, expiresAfter ...time.Duration) (err error) {
 	if len(expiresAfter) > 0 && !isExpirationValid(expiresAfter[0]) {
 		return ErrInvalidExpireAfter
 	}
 	cache.mutex.Lock()
-	defer cache.mutex.Unlock()
-	if _, found := cache.items[key]; !found {
-		return cache.add(key, value, expiresAfter...)
+	added := false
+	replaced := false
+	var oldValue TValue
+	defer func() {
+		cache.mutex.Unlock()
+		if added {
+			cache.onItemAdded(cache, ItemAddedEventArgs[TKey, TValue]{
+				Key:   key,
+				Value: value,
+			})
+		}
+		if replaced {
+			cache.onItemReplaced(cache, ItemReplacedEventArgs[TKey, TValue]{
+				Key:      key,
+				OldValue: oldValue,
+				NewValue: value,
+			})
+		}
+	}()
+	if item, found := cache.items[key]; !found {
+		cache.add(key, value, expiresAfter...)
+		added = true
+		return nil
+	} else {
+		oldValue = item.Value
 	}
-	return cache.replace(key, value, expiresAfter...)
+	cache.replace(key, value, expiresAfter...)
+	replaced = true
+	return nil
 }

@@ -12,11 +12,11 @@ package cache
 //
 //	value TValue
 //
-// Value from the specified key.
+// The value stored under the specified key, or the zero value of TValue if the key is absent.
 //
 //	found bool
 //
-// True if specified key is present in cache; false otherwise.
+// True if the specified key is present in the cache; false otherwise.
 func (cache *Cache[TKey, TValue]) Get(key TKey) (value TValue, found bool) {
 	cache.mutex.Lock()
 	defer cache.mutex.Unlock()

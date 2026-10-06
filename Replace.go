@@ -1,6 +1,8 @@
 package cache
 
-import "time"
+import (
+	"time"
+)
 
 // Replaces the value in the cache under the specified key.
 //
@@ -14,51 +16,65 @@ import "time"
 //
 // The value to be replaced in the cache under the specified key.
 //
-//	expiresAfter time.Duration [OPTIONAL]
+//	expiresAfter ...time.Duration [OPTIONAL]
 //
-// The time after the value is removed from the cache.
-// If the parameter is ommited, the default expireAfter value is used. See cache.New, cache.Must methods.
+// The duration after which the value is removed from the cache.
+// If omitted, the default expiration specified in New or Must is used.
+// If multiple values are provided, only the first is used.
 // The special value NeverExpire can be used to indicate that the value is cached until manually removed.
 //
 // # Returns
 //
 //	err error
 //
-// ErrKeyNotFound - when the specified key does not exist in the cache.
-// ErrInvalidExpireAfter - when passed expiresAfter is not greater than zero or not equal to the special value - NeverExpire.
+// Errors:
+//   - ErrKeyNotFound - when the specified key does not exist in the cache.
+//   - ErrInvalidExpireAfter - when the specified expiration is neither greater than zero nor equal to NeverExpire.
+//
+// # Remarks
+//
+// On success, Replace raises the ItemReplaced event after updating the value.
 func (cache *Cache[TKey, TValue]) Replace(key TKey, value TValue, expiresAfter ...time.Duration) (err error) {
 	if len(expiresAfter) > 0 && !isExpirationValid(expiresAfter[0]) {
 		return ErrInvalidExpireAfter
 	}
 	cache.mutex.Lock()
-	defer cache.mutex.Unlock()
-	if _, found := cache.items[key]; !found {
+	var oldValue item[TValue]
+	found := false
+	replaced := false
+	defer func() {
+		cache.mutex.Unlock()
+		if replaced {
+			cache.onItemReplaced(cache, ItemReplacedEventArgs[TKey, TValue]{
+				Key:      key,
+				OldValue: oldValue.Value,
+				NewValue: value,
+			})
+		}
+	}()
+	oldValue, found = cache.items[key]
+	if !found {
 		return ErrKeyNotFound
 	}
-	return cache.replace(key, value, expiresAfter...)
+	cache.replace(key, value, expiresAfter...)
+	replaced = true
+	return nil
 }
 
-func (cache *Cache[TKey, TValue]) replace(key TKey, value TValue, expiresAfter ...time.Duration) (err error) {
+func (cache *Cache[TKey, TValue]) replace(key TKey, value TValue, expiresAfter ...time.Duration) {
 	if item, found := cache.items[key]; found {
-		if item.Timer != nil && !item.Timer.Stop() {
-			<-item.Timer.C
+		if item.Timer != nil {
+			item.Timer.Stop()
 		}
 	}
 	expiration := cache.defaultExpireAfter
 	if len(expiresAfter) > 0 && (expiresAfter[0] > 0 || expiresAfter[0] == NeverExpire) {
 		expiration = expiresAfter[0]
 	}
-	var timer *time.Timer = nil
-	if expiration != NeverExpire {
-		timer = time.AfterFunc(expiration, func() {
-			cache.mutex.Lock()
-			defer cache.mutex.Unlock()
-			delete(cache.items, key)
-		})
-	}
+	timer, token := cache.scheduleExpiration(key, expiration)
 	cache.items[key] = item[TValue]{
-		Value: value,
-		Timer: timer,
+		Value:           value,
+		Timer:           timer,
+		expirationToken: token,
 	}
-	return nil
 }

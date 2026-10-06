@@ -1,0 +1,6 @@
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/thereisnoplanb/event v1.0.1 h1:1pNJeg/8sP0gKHbUbBJSIcz5rOxaoFFs730g97OS19w=
+github.com/thereisnoplanb/event v1.0.1/go.mod h1:t9kRL7Wt71ToFJD2whek5EmlovgA8gh1VNuEnjXuukw=
+github.com/thereisnoplanb/event v1.0.2 h1:ySMYitXZEkKADaOaBJmR7Onx9qD/m36d/5NvlFdPS74=
+github.com/thereisnoplanb/event v1.0.2/go.mod h1:t9kRL7Wt71ToFJD2whek5EmlovgA8gh1VNuEnjXuukw=

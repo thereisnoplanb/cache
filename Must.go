@@ -2,14 +2,14 @@ package cache
 
 import "time"
 
-// Creates a new cache with the specified key type and value type. Panics on error.
+// Creates a new cache with the specified default expiration duration. Panics if the duration is invalid.
 //
 // # Parameters
 //
 //	expireAfter time.Duration
 //
-// The default value of time after the expired value is removed from the cache.
-// The special value NeverExpire can be used to indicate that the values are stored in the cache until manually removed.
+// The default duration after which each value is removed from the cache.
+// The special value NeverExpire disables automatic expiration by default.
 //
 // # Returns
 //
@@ -17,9 +17,9 @@ import "time"
 //
 // A cache with the specified key type and value type.
 //
-//	# Remarks
+// # Remarks
 //
-// Panics when expireAfter time.Duration param is not grater than zero or is not equal to the special value - NeverExpire.
+// Panics when expireAfter is neither greater than zero nor equal to NeverExpire.
 func Must[TKey comparable, TValue any](expireAfter time.Duration) (cache *Cache[TKey, TValue]) {
 	c, err := New[TKey, TValue](expireAfter)
 	if err != nil {
